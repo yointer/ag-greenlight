@@ -6,6 +6,7 @@ from PIL import ImageGrab
 
 # Configuration
 SCRIPT_DIR = Path(__file__).parent
+IMAGES_DIR = SCRIPT_DIR / "images"
 CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans
 SCROLL_CLICKS = -5     # Negative = scroll down
@@ -15,11 +16,11 @@ COLOR_MAX = (150, 180, 255)   # max (R, G, B)
 
 # Buttons to watch for — checked every scan cycle
 BUTTONS = [
-    SCRIPT_DIR / "run_button.jpg",
-    SCRIPT_DIR / "allow_this_conversation_button.jpg",
+    IMAGES_DIR / "run_button.jpg",
+    IMAGES_DIR / "allow_this_conversation_button.jpg",
 ]
 
-TEXT_BOX = SCRIPT_DIR / "text_box.jpg"
+TEXT_BOX = IMAGES_DIR / "text_box.jpg"
 
 
 def is_color_match(region) -> bool:

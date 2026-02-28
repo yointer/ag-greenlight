@@ -1,12 +1,25 @@
 # ag-greenlight
 
-A PyAutoGUI script that scans your screen for a button image and clicks it automatically.
+A PyAutoGUI script that scans your screen for UI buttons and clicks them automatically. Includes scroll-to-reveal for hidden buttons and colour verification for precise matching.
+
+## Project Structure
+
+```
+ag-greenlight/
+├── click_run_button.py      # Main script
+├── images/                  # Reference button screenshots
+│   ├── run_button.jpg
+│   ├── allow_this_conversation_button.jpg
+│   ├── allow_once_button.jpg
+│   ├── text_box.jpg
+│   └── prompt_done.jpg
+├── requirements.txt
+└── README.md
+```
 
 ## Requirements
 
 - Python 3.7+
-- pyautogui
-- opencv-python (required for the `confidence` parameter)
 
 ```bash
 pip install -r requirements.txt
@@ -14,14 +27,18 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Take a screenshot of the button you want to click and save it as `run_button.jpg` in the same directory as the script.
-2. Run the script:
+1. Place tightly-cropped screenshots of buttons you want to auto-click into the `images/` folder.
+2. Update the `BUTTONS` list in `click_run_button.py` if adding new targets.
+3. Run:
 
 ```bash
 python click_run_button.py
 ```
 
-The script will scan the screen every second, click the button as soon as it's found, then exit.
+The script runs forever (Ctrl+C to stop). Each cycle it:
+- Scrolls down near the text box to reveal hidden buttons
+- Scans for each button in the `BUTTONS` list
+- Clicks any match that passes the blue colour check
 
 ## Configuration
 
@@ -29,12 +46,8 @@ Edit the constants at the top of `click_run_button.py`:
 
 | Variable | Default | Description |
 |---|---|---|
-| `IMAGE_PATH` | `"run_button.jpg"` | Path to the reference image |
 | `CONFIDENCE` | `0.8` | Match sensitivity (0.0–1.0). Lower = fuzzier |
-| `SCAN_INTERVAL` | `1.0` | Seconds between scans |
-| `TIMEOUT` | `30` | Seconds before giving up (`None` = wait forever) |
-
-## Tips
-
-- If the button isn't detected, try lowering `CONFIDENCE` to `0.7`.
-- Crop the screenshot tightly around the button for better accuracy.
+| `SCAN_INTERVAL` | `5.0` | Seconds between scans |
+| `SCROLL_CLICKS` | `-5` | Scroll amount (negative = down) |
+| `COLOR_MIN` | `(0, 80, 130)` | Min RGB for blue colour check |
+| `COLOR_MAX` | `(150, 180, 255)` | Max RGB for blue colour check |
