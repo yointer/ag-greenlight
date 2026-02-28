@@ -1,10 +1,12 @@
 import pyautogui
 import sys
 import time
+from pathlib import Path
 from PIL import ImageGrab
 
 # Configuration
-IMAGE_PATH = "run_button.jpg"
+SCRIPT_DIR = Path(__file__).parent
+IMAGE_PATH = str(SCRIPT_DIR / "run_button.jpg")
 CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans
 # Expected background colour: blue button (white text on blue bg)
