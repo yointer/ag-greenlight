@@ -6,7 +6,7 @@ import time
 IMAGE_PATH = "run_button.jpg"
 CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans when looping
-TIMEOUT = None           # Max seconds to wait before giving up (None = wait forever)
+TIMEOUT = None         # Run forever
 
 
 def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
@@ -27,25 +27,21 @@ def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
 def main():
     print(f"[*] Scanning for '{IMAGE_PATH}' …")
 
-    start = time.time()
+    print("[*] Running forever. Press Ctrl+C to stop.")
     while True:
         try:
             clicked = find_and_click(IMAGE_PATH)
         except pyautogui.ImageNotFoundException:
             clicked = False
+        except KeyboardInterrupt:
+            print("\n[*] Stopped by user.")
+            sys.exit(0)
         except Exception as exc:
             print(f"[!] Error during scan: {exc}", file=sys.stderr)
-            sys.exit(1)
 
-        if clicked:
-            break
+        if not clicked:
+            print(f"    Not found. Retrying in {SCAN_INTERVAL}s …")
 
-        elapsed = time.time() - start
-        if TIMEOUT is not None and elapsed >= TIMEOUT:
-            print(f"[✗] '{IMAGE_PATH}' not found within {TIMEOUT}s — giving up.")
-            sys.exit(1)
-
-        print(f"    Not found yet ({elapsed:.0f}s elapsed). Retrying in {SCAN_INTERVAL}s …")
         time.sleep(SCAN_INTERVAL)
 
 
