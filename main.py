@@ -24,6 +24,7 @@ BUTTONS = [
 ]
 
 TEXT_BOX = IMAGES_DIR / "text_box.jpg"
+RUN_BUTTON_OBSTRUCTED = IMAGES_DIR / "run_button_obstructed.jpg"
 
 
 def is_color_match(region) -> bool:
@@ -84,6 +85,30 @@ def scroll_to_reveal():
     pyautogui.scroll(SCROLL_CLICKS)
 
 
+def clear_obstruction():
+    """
+    If the Run button is obstructed (e.g. by a down-arrow overlay),
+    scroll up then back down to dismiss the overlay.
+    """
+    try:
+        location = pyautogui.locateOnScreen(
+            str(RUN_BUTTON_OBSTRUCTED), confidence=CONFIDENCE
+        )
+    except pyautogui.ImageNotFoundException:
+        return
+    if location is None:
+        return
+
+    centre = pyautogui.center(location)
+    pyautogui.moveTo(centre.x, centre.y)
+    pyautogui.scroll(3)    # scroll up to dismiss overlay
+    time.sleep(0.3)
+    pyautogui.scroll(-3)   # scroll back down
+    time.sleep(0.3)
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] [↕] Cleared obstructed Run button")
+
+
 def main():
     print(f"[*] Watching {len(BUTTONS)} button(s). Press Ctrl+C to stop.")
 
@@ -97,6 +122,9 @@ def main():
                 scroll_to_reveal()
                 last_scroll = now
                 time.sleep(0.5)
+
+            # Clear any obstructed Run button before scanning
+            clear_obstruction()
 
             for btn_path, check_color in BUTTONS:
                 try:
