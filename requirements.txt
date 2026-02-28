@@ -1,2 +1,4 @@
 pyautogui
+pyscreeze
+Pillow
 opencv-python
