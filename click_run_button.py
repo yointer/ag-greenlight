@@ -11,8 +11,8 @@ CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans
 # Expected background colour: blue button (white text on blue bg)
 # Tweak these HSV-style RGB thresholds if needed
-COLOR_MIN = (50,  80,  150)   # min (R, G, B)
-COLOR_MAX = (130, 160, 255)   # max (R, G, B)
+COLOR_MIN = (0,   80,  130)   # min (R, G, B)
+COLOR_MAX = (150, 180, 255)   # max (R, G, B)
 
 
 def is_color_match(region) -> bool:
@@ -22,7 +22,7 @@ def is_color_match(region) -> bool:
     """
     x, y, w, h = region.left, region.top, region.width, region.height
     screenshot = ImageGrab.grab(bbox=(x, y, x + w, y + h))
-    pixels = list(screenshot.getdata())
+    pixels = list(screenshot.getdata()) if not hasattr(screenshot, 'get_flattened_data') else list(screenshot.get_flattened_data())
 
     avg_r = sum(p[0] for p in pixels) / len(pixels)
     avg_g = sum(p[1] for p in pixels) / len(pixels)
