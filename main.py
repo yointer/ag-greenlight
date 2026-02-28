@@ -9,15 +9,18 @@ SCRIPT_DIR = Path(__file__).parent
 IMAGES_DIR = SCRIPT_DIR / "images"
 CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans
+SCROLL_INTERVAL = 300  # Seconds between scroll-to-reveal (5 minutes)
 SCROLL_CLICKS = -5     # Negative = scroll down
 # Expected background colour: blue button (white text on blue bg)
 COLOR_MIN = (0,   80,  130)   # min (R, G, B)
 COLOR_MAX = (150, 180, 255)   # max (R, G, B)
 
 # Buttons to watch for — checked every scan cycle
+# Each entry: (image_path, requires_color_check)
 BUTTONS = [
-    IMAGES_DIR / "run_button.jpg",
-    IMAGES_DIR / "allow_this_conversation_button.jpg",
+    (IMAGES_DIR / "run_button.jpg",                    True),
+    (IMAGES_DIR / "allow_this_conversation_button.jpg", True),
+    (IMAGES_DIR / "request-popup.jpg",                  False),
 ]
 
 TEXT_BOX = IMAGES_DIR / "text_box.jpg"
@@ -42,16 +45,16 @@ def is_color_match(region) -> bool:
     return r_ok and g_ok and b_ok
 
 
-def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
+def find_and_click(image_path: str, check_color: bool = True, confidence: float = CONFIDENCE) -> bool:
     """
-    Locate image on screen, verify colour, then click its centre.
-    Returns True if found, colour-verified, and clicked. False otherwise.
+    Locate image on screen, optionally verify colour, then click its centre.
+    Returns True if found and clicked. False otherwise.
     """
     location = pyautogui.locateOnScreen(image_path, confidence=confidence)
     if location is None:
         return False
 
-    if not is_color_match(location):
+    if check_color and not is_color_match(location):
         return False
 
     centre = pyautogui.center(location)
@@ -84,15 +87,20 @@ def scroll_to_reveal():
 def main():
     print(f"[*] Watching {len(BUTTONS)} button(s). Press Ctrl+C to stop.")
 
+    last_scroll = 0
+
     while True:
         try:
-            # Scroll down to reveal hidden buttons
-            scroll_to_reveal()
-            time.sleep(0.5)
+            # Scroll down every SCROLL_INTERVAL seconds
+            now = time.time()
+            if now - last_scroll >= SCROLL_INTERVAL:
+                scroll_to_reveal()
+                last_scroll = now
+                time.sleep(0.5)
 
-            for btn in BUTTONS:
+            for btn_path, check_color in BUTTONS:
                 try:
-                    find_and_click(str(btn))
+                    find_and_click(str(btn_path), check_color=check_color)
                 except pyautogui.ImageNotFoundException:
                     pass
         except KeyboardInterrupt:
