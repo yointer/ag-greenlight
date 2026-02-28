@@ -28,8 +28,6 @@ def is_color_match(region) -> bool:
     avg_g = sum(p[1] for p in pixels) / len(pixels)
     avg_b = sum(p[2] for p in pixels) / len(pixels)
 
-    print(f"    Average colour of matched region → R={avg_r:.0f} G={avg_g:.0f} B={avg_b:.0f}")
-
     r_ok = COLOR_MIN[0] <= avg_r <= COLOR_MAX[0]
     g_ok = COLOR_MIN[1] <= avg_g <= COLOR_MAX[1]
     b_ok = COLOR_MIN[2] <= avg_b <= COLOR_MAX[2]
@@ -46,7 +44,6 @@ def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
         return False
 
     if not is_color_match(location):
-        print("    Match found but colour check failed (wrong button style) — skipping.")
         return False
 
     centre = pyautogui.center(location)
@@ -70,9 +67,6 @@ def main():
         except Exception as exc:
             print(f"[!] Error during scan: {exc}", file=sys.stderr)
             clicked = False
-
-        if not clicked:
-            print(f"    Not found. Retrying in {SCAN_INTERVAL}s …")
 
         time.sleep(SCAN_INTERVAL)
 
