@@ -52,7 +52,8 @@ def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
 
     centre = pyautogui.center(location)
     pyautogui.click(centre)
-    print(f"[✓] Clicked '{Path(image_path).name}' at {centre}")
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] [✓] Clicked '{Path(image_path).name}' at {centre}")
     return True
 
 
