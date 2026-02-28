@@ -6,13 +6,17 @@ from PIL import ImageGrab
 
 # Configuration
 SCRIPT_DIR = Path(__file__).parent
-IMAGE_PATH = str(SCRIPT_DIR / "run_button.jpg")
 CONFIDENCE = 0.8       # How closely it must match (0.0–1.0)
 SCAN_INTERVAL = 5.0    # Seconds between scans
 # Expected background colour: blue button (white text on blue bg)
-# Tweak these HSV-style RGB thresholds if needed
 COLOR_MIN = (0,   80,  130)   # min (R, G, B)
 COLOR_MAX = (150, 180, 255)   # max (R, G, B)
+
+# Buttons to watch for — checked every scan cycle
+BUTTONS = [
+    SCRIPT_DIR / "run_button.jpg",
+    SCRIPT_DIR / "allow_this_conversation_button.jpg",
+]
 
 
 def is_color_match(region) -> bool:
@@ -48,25 +52,24 @@ def find_and_click(image_path: str, confidence: float = CONFIDENCE) -> bool:
 
     centre = pyautogui.center(location)
     pyautogui.click(centre)
-    print(f"[✓] Clicked '{image_path}' at {centre}")
+    print(f"[✓] Clicked '{Path(image_path).name}' at {centre}")
     return True
 
 
 def main():
-    print(f"[*] Scanning for '{IMAGE_PATH}' (blue background only) …")
-    print("[*] Running forever. Press Ctrl+C to stop.")
+    print(f"[*] Watching {len(BUTTONS)} button(s). Press Ctrl+C to stop.")
 
     while True:
-        try:
-            clicked = find_and_click(IMAGE_PATH)
-        except pyautogui.ImageNotFoundException:
-            clicked = False
-        except KeyboardInterrupt:
-            print("\n[*] Stopped by user.")
-            sys.exit(0)
-        except Exception as exc:
-            print(f"[!] Error during scan: {exc}", file=sys.stderr)
-            clicked = False
+        for btn in BUTTONS:
+            try:
+                find_and_click(str(btn))
+            except pyautogui.ImageNotFoundException:
+                pass
+            except KeyboardInterrupt:
+                print("\n[*] Stopped by user.")
+                sys.exit(0)
+            except Exception as exc:
+                print(f"[!] Error scanning '{btn.name}': {exc}", file=sys.stderr)
 
         time.sleep(SCAN_INTERVAL)
 
