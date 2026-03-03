@@ -24,7 +24,7 @@ BUTTONS = [
     (IMAGES_DIR / "allow_this_conversation_button.jpg", True,  (0, 0),    0),
     (IMAGES_DIR / "request-popup.jpg",                  False, (0, 0),    0),
     (IMAGES_DIR / "expand_button.jpg",                  False, (0, 0),    0),
-    (IMAGES_DIR / "bell_button.jpg",                    False, (-0.5, 0), 300),
+    (IMAGES_DIR / "bell_button.jpg",                    False, (-1.0, 0), 300),
 ]
 
 TEXT_BOX = IMAGES_DIR / "text_box.jpg"
