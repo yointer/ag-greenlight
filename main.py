@@ -16,14 +16,15 @@ COLOR_MIN = (0,   80,  130)   # min (R, G, B)
 COLOR_MAX = (150, 180, 255)   # max (R, G, B)
 
 # Buttons to watch for — checked every scan cycle
-# Each entry: (image_path, requires_color_check, click_offset)
+# Each entry: (image_path, requires_color_check, click_offset, cooldown_sec)
 #   click_offset = (x%, y%) offset from centre, as fraction of button size
+#   cooldown_sec = minimum seconds between clicks (0 = no cooldown)
 BUTTONS = [
-    (IMAGES_DIR / "run_button.jpg",                    True,  (0, 0)),
-    (IMAGES_DIR / "allow_this_conversation_button.jpg", True,  (0, 0)),
-    (IMAGES_DIR / "request-popup.jpg",                  False, (0, 0)),
-    (IMAGES_DIR / "expand_button.jpg",                  False, (0, 0)),
-    (IMAGES_DIR / "bell_button.jpg",                    False, (-0.5, 0)),
+    (IMAGES_DIR / "run_button.jpg",                    True,  (0, 0),    0),
+    (IMAGES_DIR / "allow_this_conversation_button.jpg", True,  (0, 0),    0),
+    (IMAGES_DIR / "request-popup.jpg",                  False, (0, 0),    0),
+    (IMAGES_DIR / "expand_button.jpg",                  False, (0, 0),    0),
+    (IMAGES_DIR / "bell_button.jpg",                    False, (-0.5, 0), 300),
 ]
 
 TEXT_BOX = IMAGES_DIR / "text_box.jpg"
@@ -122,6 +123,7 @@ def main():
     print(f"[*] Watching {len(BUTTONS)} button(s). Press Ctrl+C to stop.")
 
     last_scroll = 0
+    last_click = {}  # per-button cooldown tracker
 
     while True:
         try:
@@ -135,10 +137,16 @@ def main():
             # Clear any obstructed Run button before scanning
             clear_obstruction()
 
-            for btn_path, check_color, offset in BUTTONS:
+            for btn_path, check_color, offset, cooldown in BUTTONS:
+                # Skip if still in cooldown
+                btn_key = str(btn_path)
+                if cooldown > 0 and now - last_click.get(btn_key, 0) < cooldown:
+                    continue
                 try:
-                    find_and_click(str(btn_path), check_color=check_color,
-                                   click_offset=offset)
+                    clicked = find_and_click(btn_key, check_color=check_color,
+                                             click_offset=offset)
+                    if clicked and cooldown > 0:
+                        last_click[btn_key] = time.time()
                 except pyautogui.ImageNotFoundException:
                     pass
         except KeyboardInterrupt:
