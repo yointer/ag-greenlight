@@ -16,13 +16,14 @@ COLOR_MIN = (0,   80,  130)   # min (R, G, B)
 COLOR_MAX = (150, 180, 255)   # max (R, G, B)
 
 # Buttons to watch for — checked every scan cycle
-# Each entry: (image_path, requires_color_check)
+# Each entry: (image_path, requires_color_check, click_offset)
+#   click_offset = (x%, y%) offset from centre, as fraction of button size
 BUTTONS = [
-    (IMAGES_DIR / "run_button.jpg",                    True),
-    (IMAGES_DIR / "allow_this_conversation_button.jpg", True),
-    (IMAGES_DIR / "request-popup.jpg",                  False),
-    (IMAGES_DIR / "expand_button.jpg",                  False),
-    (IMAGES_DIR / "bell_button.jpg",                    False),
+    (IMAGES_DIR / "run_button.jpg",                    True,  (0, 0)),
+    (IMAGES_DIR / "allow_this_conversation_button.jpg", True,  (0, 0)),
+    (IMAGES_DIR / "request-popup.jpg",                  False, (0, 0)),
+    (IMAGES_DIR / "expand_button.jpg",                  False, (0, 0)),
+    (IMAGES_DIR / "bell_button.jpg",                    False, (-0.5, 0)),
 ]
 
 TEXT_BOX = IMAGES_DIR / "text_box.jpg"
@@ -48,9 +49,13 @@ def is_color_match(region) -> bool:
     return r_ok and g_ok and b_ok
 
 
-def find_and_click(image_path: str, check_color: bool = True, confidence: float = CONFIDENCE) -> bool:
+def find_and_click(image_path: str, check_color: bool = True,
+                   click_offset: tuple = (0, 0),
+                   confidence: float = CONFIDENCE) -> bool:
     """
-    Locate image on screen, optionally verify colour, then click its centre.
+    Locate image on screen, optionally verify colour, then click.
+    click_offset = (x%, y%) shifts the click point from centre,
+    as a fraction of the matched region's width/height.
     Returns True if found and clicked. False otherwise.
     """
     location = pyautogui.locateOnScreen(image_path, confidence=confidence)
@@ -61,9 +66,11 @@ def find_and_click(image_path: str, check_color: bool = True, confidence: float 
         return False
 
     centre = pyautogui.center(location)
-    pyautogui.click(centre)
+    click_x = centre.x + int(click_offset[0] * location.width)
+    click_y = centre.y + int(click_offset[1] * location.height)
+    pyautogui.click(click_x, click_y)
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] [✓] Clicked '{Path(image_path).name}' at {centre}")
+    print(f"[{timestamp}] [✓] Clicked '{Path(image_path).name}' at ({click_x}, {click_y})")
     return True
 
 
@@ -128,9 +135,10 @@ def main():
             # Clear any obstructed Run button before scanning
             clear_obstruction()
 
-            for btn_path, check_color in BUTTONS:
+            for btn_path, check_color, offset in BUTTONS:
                 try:
-                    find_and_click(str(btn_path), check_color=check_color)
+                    find_and_click(str(btn_path), check_color=check_color,
+                                   click_offset=offset)
                 except pyautogui.ImageNotFoundException:
                     pass
         except KeyboardInterrupt:
